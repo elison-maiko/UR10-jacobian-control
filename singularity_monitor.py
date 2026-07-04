@@ -14,7 +14,7 @@ rtde_r = RTDEReceiveInterface(IP_URSIM)
 
 # Carrega o modelo cinemático do UR10
 ur10 = rtb.models.UR10()
-LIMITE_SINGULARIDADE = 0.03 # Limite crítico para o teste
+LIMITE_SINGULARIDADE = 0.0025 # Limite crítico para o teste
 
 # 2. Definindo os pontos (Ângulos em radianos)
 base_angle = math.radians(131.08) # Ângulo da base extraído da imagem para melhor visualização 3D
