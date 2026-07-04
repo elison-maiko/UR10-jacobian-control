@@ -1,52 +1,82 @@
-# Instale as dependências:
-# pip install ur_rtde roboticstoolbox-python numpy
-
-from rtde_receive import RTDEReceiveInterface
-from rtde_control import RTDEControlInterface
-import roboticstoolbox as rtb
-import numpy as np
 import time
+import math
+import numpy as np
+import roboticstoolbox as rtb
+from rtde_control import RTDEControlInterface
+from rtde_receive import RTDEReceiveInterface
 
-# 1. Configuração do RTDE (Use o IP do seu Docker URSim)
-# O padrão no docker local geralmente é 127.0.0.1
-IP_URSIM = "127.0.0.1" 
-rtde_r = RTDEReceiveInterface(IP_URSIM)
+# 1. Configuração Inicial
+IP_URSIM = "127.0.0.1"
+print(f"Conectando ao URSim no IP {IP_URSIM}...")
+
 rtde_c = RTDEControlInterface(IP_URSIM)
+rtde_r = RTDEReceiveInterface(IP_URSIM)
 
-# 2. Carregar o modelo cinemático exato do UR10
+# Carrega o modelo cinemático do UR10
 ur10 = rtb.models.UR10()
+LIMITE_SINGULARIDADE = 0.03 # Limite crítico para o teste
 
-# Limite de segurança para a singularidade (quanto mais próximo de 0, mais perigoso)
-LIMITE_SINGULARIDADE = 0.05 
+# 2. Definindo os pontos (Ângulos em radianos)
+base_angle = math.radians(131.08) # Ângulo da base extraído da imagem para melhor visualização 3D
+
+# Posição segura de repouso (Braço dobrado em L)
+# Base: 131, Ombro: -90, Cotovelo: 90, Punho 1: -90, Punho 2: -90, Punho 3: 0
+q_seguro = [base_angle, math.radians(-90), math.radians(90), math.radians(-90), math.radians(-90), 0]
+
+# Posição de Singularidade de Limite de Espaço (Braço totalmente esticado)
+# Cotovelo vai para 0 graus. O braço vira um "bastão" reto.
+q_singularidade = [base_angle, math.radians(-90), math.radians(0), math.radians(-90), math.radians(-90), 0]
 
 try:
-    print("Monitoramento de Singularidade Iniciado...")
+    print("\n--- PASSO 1: Indo para a posição inicial segura ---")
+    rtde_c.moveJ(q_seguro, speed=1.0, acceleration=1.0)
+    time.sleep(2) # Pausa maior para o vídeo
+
+    print("\n--- PASSO 2: Esticando o braço em direção à singularidade ---")
+    # asynchronous=True faz o código Python continuar na linha de baixo imediatamente
+    rtde_c.moveJ(q_singularidade, speed=0.3, acceleration=0.3, asynchronous=True)
+
+    # 3. Loop de Monitoramento
     while True:
-        # 3. Ler a posição atual das 6 juntas em radianos
+        
+        # Lê a posição em tempo real
         q_atual = rtde_r.getActualQ()
         
-        # 4. Obter a Matriz Jacobiana (6x6) no estado atual
-        J = ur10.jacob0(q_atual)
+        # Condição de parada caso ele chegue no destino
+        distancia_para_alvo = sum(abs(atual - alvo) for atual, alvo in zip(q_atual, q_singularidade))
+        if distancia_para_alvo < 0.05:
+            print("Robô chegou no alvo antes de acionar a proteção.")
+            break
         
-        # 5. Calcular a Medida de Manipulabilidade de Yoshikawa
-        # w = sqrt(det(J * J_transposta)). Se w se aproxima de 0, é singularidade.
+        # Calcula o Jacobiano e a manipulabilidade
+        J = ur10.jacob0(q_atual)
         manipulabilidade = np.sqrt(max(0, np.linalg.det(J @ J.T)))
         
-        # 6. Lógica de Proteção
+        # Converte o ângulo do Cotovelo (Junta 3) para graus para mostrar na tela
+        cotovelo_graus = math.degrees(q_atual[2])
+        
+        print(f"Cotovelo: {cotovelo_graus:>6.2f} graus | Manipulabilidade: {manipulabilidade:.4f}")
+        
+        # Atuação do Monitor de Singularidade
         if manipulabilidade < LIMITE_SINGULARIDADE:
-            print(f"ALERTA! Risco de Singularidade. Manipulabilidade: {manipulabilidade:.4f}")
+            print("\n" + "="*50)
+            print("🚨 ALERTA CRÍTICO: LIMITE DE SINGULARIDADE (BRAÇO ESTICADO) 🚨")
+            print("="*50)
             
-            # Exemplo de ação: Parar o movimento suavemente
-            # rtde_c.stopL(0.5) # Descomente para ativar a parada
+            # Comando para frear o robô imediatamente
+            rtde_c.stopJ(2.0)
+            print("Robô freado com sucesso antes da singularidade fatal!")
+            break 
             
-        else:
-            # Apenas imprime o status seguro
-            print(f"Status Normal - Manipulabilidade: {manipulabilidade:.4f}", end='\r')
-            
-        time.sleep(0.01) # Ciclo de 100Hz
+        time.sleep(0.02) # Roda a 50Hz para não sobrecarregar a rede
+
+    print("\nTeste finalizado.")
 
 except KeyboardInterrupt:
-    print("\nMonitoramento encerrado.")
+    print("\nTeste interrompido pelo usuário.")
+    rtde_c.stopJ(2.0)
+
 finally:
-    rtde_r.disconnect()
+    # Sempre desconectar limpo
     rtde_c.disconnect()
+    rtde_r.disconnect()
