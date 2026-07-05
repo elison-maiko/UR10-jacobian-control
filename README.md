@@ -51,7 +51,7 @@ A comunicação com o simulador URSim foi estabelecida via rede local utilizando
 
 Foram desenvolvidos dois scripts principais abordando eixos temáticos distintos:
 
-### A. Monitor de Singularidade Ativo (`singularity_test.py`)
+### A. Monitor de Singularidade Ativo (`singularity_monitor.py`)
 
 **Eixo Temático:** Sistemas de Proteção e Monitoramento Ativo.
 
@@ -65,7 +65,7 @@ Este script atua como um supervisor de segurança. Ele força propositalmente o 
   5. Computa a matriz Jacobiana correspondente àquele milissegundo e extrai a **Manipulabilidade de Yoshikawa**.
   6. **Ação de Proteção:** Quando o índice cai abaixo do limite crítico seguro ($w < 0.03$), o script substitui o movimento atual por um comando de parada de emergência (`stopJ`), preservando o robô e reportando o alerta no terminal.
 
-### B. Mapeamento Dinâmico de Torque (`pick_and_place_torque.py`)
+### B. Mapeamento Dinâmico de Torque (`torque_monitor.py`)
 
 **Eixo Temático:** Mapeamento e Controle Baseado em Força/Torque.
 
