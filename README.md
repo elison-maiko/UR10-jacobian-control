@@ -65,7 +65,7 @@ Este script atua como um supervisor de segurança. Ele força propositalmente o 
   3. Inicia um movimento assíncrono esticando o Cotovelo (Junta 3) em direção a 0 graus.
   4. Em um loop de alta frequência, lê a posição real das juntas (`getActualQ`).
   5. Computa a matriz Jacobiana correspondente àquele milissegundo e extrai a **Manipulabilidade de Yoshikawa**.
-  6. **Ação de Proteção:** Quando o índice cai abaixo do limite crítico seguro ($w < 0.03$), o script substitui o movimento atual por um comando de parada de emergência (`stopJ`), preservando o robô e reportando o alerta no terminal.
+  6. **Ação de Proteção:** Quando o índice cai abaixo do limite crítico seguro ($w < 0.0025$), o script substitui o movimento atual por um comando de parada de emergência (`stopJ`), preservando o robô e reportando o alerta no terminal.
 
 ### B. Mapeamento Dinâmico de Torque (`torque_monitor.py`)
 
