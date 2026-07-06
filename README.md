@@ -3,6 +3,8 @@
 **Disciplina:** EMB5615-09605 (20261) - Robótica e Sistemas Mecatrônicos
 **Instituição:** Universidade Federal de Santa Catarina (UFSC)
 
+Alunos: Elison Maiko Oliveira de Souza e Italo Miranda Kusmim Alves
+
 Este repositório contém o desenvolvimento e a implementação de soluções de controle e segurança para o manipulador industrial Universal Robots UR10, utilizando o simulador URSim. O projeto baseia-se na exploração das propriedades matemáticas e físicas do **Jacobiano Geométrico**, transformando matrizes e derivadas em algoritmos práticos de proteção e monitoramento dinâmico.
 
 ## 1. Fundamentação Teórica: O Jacobiano do UR10 e suas Propriedades Físicas
