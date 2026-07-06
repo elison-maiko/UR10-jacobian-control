@@ -1,9 +1,14 @@
+### Autores:
+### Elison Maiko Oliveira de Souza 
+### Italo Miranda Kusmin Alves (22101930)
+
 import time
 import math
 import numpy as np
 import roboticstoolbox as rtb
 from rtde_control import RTDEControlInterface
 from rtde_receive import RTDEReceiveInterface
+
 
 # 1. Configuração Inicial
 IP_URSIM = "127.0.0.1"

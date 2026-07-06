@@ -1,3 +1,7 @@
+### Autores:
+### Elison Maiko Oliveira de Souza (22102900)
+### Italo Miranda Kusmin Alves (22101930)
+
 import time
 import math
 import numpy as np
